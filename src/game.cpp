@@ -24,10 +24,10 @@ Game::Game(/* args */)
 
 void Game::loop()
 {
+    SDL_RenderClear(renderer);
+    SDL_RenderPresent(renderer);
     while (isRunning)
     {
-        SDL_RenderClear(renderer);
-        SDL_RenderPresent(renderer);
         SDL_Event event;
         while (SDL_PollEvent(&event))
         {
