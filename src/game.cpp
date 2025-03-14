@@ -20,6 +20,8 @@ Game::Game(/* args */)
     {
         std::cout << "Failed to create a renderer! Error" << SDL_GetError() << std::endl;
     }
+
+    loadImages();
 }
 
 void Game::loop()
@@ -28,28 +30,27 @@ void Game::loop()
     SDL_RenderPresent(renderer);
     while (isRunning)
     {
-        SDL_Event event;
-        while (SDL_PollEvent(&event))
-        {
-            if (event.type == SDL_QUIT)
-            {
-                isRunning = false;
+        SDL_Event e;
+        if (SDL_WaitEvent(&e)) {
+            if (e.type == SDL_QUIT) {
+                break;
             }
-            if (event.type == SDL_KEYDOWN)
-            {
-                createTexture("../img/PNG/Slime1/idle/Slime1_Idle_full.png");
-                SDL_RenderClear(renderer);
-                SDL_RenderCopy(renderer, image, nullptr, nullptr);
-                SDL_RenderPresent(renderer);
+            if(e.type == SDL_MOUSEMOTION) {
+                mousePos = e.motion.x;
+                
+                if(mousePos < 196)
+                    mousePos = 196;
+                
+                if(mousePos > 392)
+                    mousePos = 392;
             }
-            
-            
         }
+        render();
     }
     
 }
 
-void Game::createTexture(const char* PATH)
+void Game::createTexture(const char* PATH, SDL_Texture*& imageAddr)
 {   
     load = IMG_Load(PATH);
     if (load ==nullptr)
@@ -57,19 +58,37 @@ void Game::createTexture(const char* PATH)
         std::cout << "ERROR loading image:" << std::endl;
     }
     
-    image = SDL_CreateTextureFromSurface(renderer, load);
-    if (image == NULL) {
+    imageAddr = SDL_CreateTextureFromSurface(renderer, load);
+    if (imageAddr == nullptr) {
         std::cout << "Error creating texture";
     }
     SDL_FreeSurface(load);
 }
 
+void Game::loadImages()
+{
+    createTexture("../img/PNG/Learning/Bar.png", healthBar);
+}
+
+void Game::render()
+{
+    redHealthBar = {102,102,(mousePos-196), 18};
+    SDL_SetRenderDrawColor(renderer,255,255,255,255);
+    SDL_RenderClear(renderer);
+    SDL_RenderCopy(renderer, healthBar, nullptr, &rect);
+    SDL_SetRenderDrawColor(renderer, 255,0,0,255);
+    SDL_RenderFillRect(renderer, &redHealthBar);
+    SDL_RenderPresent(renderer);
+}
 Game::~Game()
 {
     std::cout << "Destroing Window" << std::endl;
     SDL_DestroyWindow(window);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyTexture(image);
+    SDL_DestroyTexture(heart);
+    SDL_DestroyTexture(healthBar);
+
 
     window = nullptr;
     image = nullptr;
